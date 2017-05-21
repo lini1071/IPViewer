@@ -169,30 +169,36 @@ void CIPViewerDlg::GetNetworkAddress()
 				// At this point, IP address is stored in 'pIPAddrTable->table[0].dwAddr'.
 				// Then we are going to convert this value to character string.
 				size_t	i, p;
-				DWORD	dwIPAddrVal = pIPAddrTable->table[0].dwAddr;
+				DWORD	dwIPAddrVal = pIPAddrTable->table[0].dwAddr, dwIPRevVal = 0;
 				unsigned char	valBuf[sizeof(dwIPAddrVal)];
 				TCHAR			strPtr[16];
 
-				// Update editboxs' text.
-				UpdateData(TRUE);
-
-				_stprintf_s(strPtr, sizeof(strPtr) / sizeof(*strPtr), L"%u", dwIPAddrVal);
-				this->m_editbox[1].SetWindowText(strPtr);
-
-				_stprintf_s(strPtr, sizeof(strPtr) / sizeof(*strPtr), L"%x", dwIPAddrVal);
-				this->m_editbox[2].SetWindowText(strPtr);
-
-				for (i = 0 ; i < sizeof(dwIPAddrVal) ; i++)
+				// Reverse value
+				for (i = 0; i < sizeof(dwIPAddrVal); i++)
 				{
 					valBuf[i] = (dwIPAddrVal & 0xFF);
 					dwIPAddrVal >>= 8;
+
+					dwIPRevVal += valBuf[i];
+					if ((sizeof(dwIPAddrVal) - 1) - i) dwIPRevVal <<= 8;
 				};
-				for (i = 0, p = 0 ; i < sizeof(dwIPAddrVal) ; i++)
+				// and convert the value to IPv4 address format string.
+				for (i = 0, p = 0; i < sizeof(dwIPAddrVal); i++)
 				{
 					p += _stprintf_s(strPtr + p, 16 - p,
 						(sizeof(dwIPAddrVal) - 1) - i ? L"%hhu." : L"%hhu", valBuf[i]);
 				};
+
+				// Update editboxs' text.
+				UpdateData(TRUE);
+
 				this->m_editbox[0].SetWindowText(strPtr);
+
+				_stprintf_s(strPtr, sizeof(strPtr) / sizeof(*strPtr), L"%u", dwIPRevVal);
+				this->m_editbox[1].SetWindowText(strPtr);
+
+				_stprintf_s(strPtr, sizeof(strPtr) / sizeof(*strPtr), L"%x", dwIPRevVal);
+				this->m_editbox[2].SetWindowText(strPtr);
 
 				UpdateData(FALSE);
 			};
